@@ -6,6 +6,7 @@ import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import LinksScreen from '../screens/LinksScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import KeepAccountScreen from '../screens/KeepAccountScreen';
 
 const config = Platform.select({
   web: { headerMode: 'screen' },
@@ -34,6 +35,25 @@ HomeStack.navigationOptions = {
 };
 
 HomeStack.path = '';
+
+const KeepAccountStack = createStackNavigator(
+  {
+    Home: KeepAccountScreen,
+  },
+  config
+);
+
+KeepAccountStack.navigationOptions = {
+  tabBarLabel: '记账',
+  tabBarIcon: ({ focused }) => (
+    <TabBarIcon
+      focused={focused}
+      name="md-clipboard"
+    />
+  ),
+};
+
+KeepAccountStack.path = '';
 
 const LinksStack = createStackNavigator(
   {
@@ -68,7 +88,7 @@ SettingsStack.navigationOptions = {
 SettingsStack.path = '';
 
 const tabNavigator = createBottomTabNavigator({
-  HomeStack,
+  KeepAccountStack,
   LinksStack,
   SettingsStack,
 });
