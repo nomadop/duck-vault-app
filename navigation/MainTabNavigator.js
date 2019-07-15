@@ -7,6 +7,7 @@ import HomeScreen from '../screens/HomeScreen';
 import LinksScreen from '../screens/LinksScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import KeepAccountScreen from '../screens/KeepAccountScreen';
+import AccountListScreen from '../screens/AccountListScreen';
 
 const config = Platform.select({
   web: { headerMode: 'screen' },
@@ -48,12 +49,31 @@ KeepAccountStack.navigationOptions = {
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
-      name="md-clipboard"
+      name={Platform.OS === 'ios' ? 'ios-clipboard' : 'md-clipboard'}
     />
   ),
 };
 
 KeepAccountStack.path = '';
+
+const AccountListStack = createStackNavigator(
+  {
+    Home: AccountListScreen,
+  },
+  config
+);
+
+AccountListStack.navigationOptions = {
+  tabBarLabel: '查账',
+  tabBarIcon: ({ focused }) => (
+    <TabBarIcon
+      focused={focused}
+      name={Platform.OS === 'ios' ? 'ios-wallet' : 'md-wallet'}
+    />
+  ),
+};
+
+AccountListStack.path = '';
 
 const LinksStack = createStackNavigator(
   {
@@ -79,7 +99,7 @@ const SettingsStack = createStackNavigator(
 );
 
 SettingsStack.navigationOptions = {
-  tabBarLabel: 'Settings',
+  tabBarLabel: '设置',
   tabBarIcon: ({ focused }) => (
     <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'ios-options' : 'md-options'} />
   ),
@@ -89,7 +109,7 @@ SettingsStack.path = '';
 
 const tabNavigator = createBottomTabNavigator({
   KeepAccountStack,
-  LinksStack,
+  AccountListStack,
   SettingsStack,
 });
 

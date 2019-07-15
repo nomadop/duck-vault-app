@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { KeyboardAvoidingView, Button, ScrollView, StyleSheet, View, Text, TextInput, Image } from 'react-native';
+import { KeyboardAvoidingView, Button, ScrollView, StyleSheet, View, Text, TextInput, Image, Dimensions } from 'react-native';
 import RNPickerSelect, { defaultStyles } from 'react-native-picker-select';
 
 import banner from '../assets/images/banner.gif';
@@ -17,8 +17,6 @@ const styles = StyleSheet.create({
   },
   bannerImage: {
     flex: 1,
-    width: 210,
-    height: 210,
     resizeMode: 'contain'
   },
   fieldRow: {
@@ -86,6 +84,7 @@ export default class KeepAccountScreen extends Component {
       comments: null,
     };
     this.contentHeight = null;
+    this.dimensionWidth = Dimensions.get('window').width;
   }
 
   submit() {
@@ -114,14 +113,15 @@ export default class KeepAccountScreen extends Component {
   }
 
   render() {
+    const bannerSize = { width: this.dimensionWidth, height: (this.dimensionWidth / 200) * 113 };
     return (
       <KeyboardAvoidingView style={styles.container} behavior="height">
         <ScrollView style={styles.container}
                     contentContainerStyle={styles.contentContainer}
                     ref={component => this.scrollView = component}
-                    onLayout={({ nativeEvent }) => this.adjustScroll(nativeEvent)}>
+                    onLayout={({ nativeEvent }) => this.adjustScroll(nativeEvent)}>g
           <View style={styles.banner}>
-            <Image source={banner} style={styles.bannerImage} />
+            <Image source={banner} style={[styles.bannerImage, bannerSize]} />
           </View>
           <View style={styles.fieldRow}>
             <Text style={styles.fieldLabel}>种类</Text>
