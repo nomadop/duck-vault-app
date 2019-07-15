@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { KeyboardAvoidingView, Button, ScrollView, StyleSheet, View, Text, TextInput, Image, Dimensions } from 'react-native';
 import RNPickerSelect, { defaultStyles } from 'react-native-picker-select';
+import DatePicker from 'react-native-datepicker'
 
 import banner from '../assets/images/banner.gif';
 
@@ -38,7 +39,15 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     color: 'black',
     paddingRight: 30, // to ensure the text is never behind the icon
-  }
+  },
+  datetimePicker: {
+    width: 200,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderColor: 'gray',
+    paddingRight: 30,
+  },
 });
 
 const pickerSelectStyles = StyleSheet.create({
@@ -119,7 +128,7 @@ export default class KeepAccountScreen extends Component {
         <ScrollView style={styles.container}
                     contentContainerStyle={styles.contentContainer}
                     ref={component => this.scrollView = component}
-                    onLayout={({ nativeEvent }) => this.adjustScroll(nativeEvent)}>g
+                    onLayout={({ nativeEvent }) => this.adjustScroll(nativeEvent)}>
           <View style={styles.banner}>
             <Image source={banner} style={[styles.bannerImage, bannerSize]} />
           </View>
@@ -151,6 +160,30 @@ export default class KeepAccountScreen extends Component {
                        value={this.state.merchant}
                        onChangeText={merchant => this.setState({ merchant })}
                        placeholder="无" />
+          </View>
+          <View style={styles.fieldRow}>
+            <Text style={styles.fieldLabel}>时间</Text>
+            <DatePicker
+              style={styles.datetimePicker}
+              date={this.state.datetime}
+              mode="datetime"
+              format="YYYY-MM-DD HH:mm"
+              confirmBtnText="确定"
+              cancelBtnText="取消"
+              customStyles={{
+                dateTouchBody: {
+                  height: 20,
+                },
+                dateInput: {
+                  height: 20,
+                  borderWidth: 0,
+                  alignItems: 'flex-start',
+                }
+              }}
+              showIcon={false}
+              minuteInterval={10}
+              onDateChange={(datetime) => {this.setState({ datetime });}}
+            />
           </View>
           <View style={styles.fieldRow}>
             <Text style={styles.fieldLabel}>备注</Text>
