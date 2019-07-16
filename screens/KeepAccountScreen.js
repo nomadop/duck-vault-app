@@ -10,16 +10,16 @@ import banner from '../assets/images/banner.gif';
 const types = [
   {
     label: '吃吃吃',
-    value: 'eating',
+    value: '吃吃吃',
   },
   {
     label: '买买买',
-    value: 'buying',
+    value: '买买买',
   },
 ];
 
 const INIT_ACCOUNT = {
-  type: 'eating',
+  type: '吃吃吃',
   sub_type: null,
   change: null,
   merchant: null,
@@ -102,14 +102,15 @@ export default class KeepAccountScreen extends Component {
   render() {
     const bannerSize = { width: this.dimensionWidth, height: (this.dimensionWidth / 200) * 113 };
     return (
-      <KeyboardAvoidingView style={styles.container} behavior="height">
+      <KeyboardAvoidingView style={styles.container} keyboardVerticalOffset={60} behavior="height">
         <Spinner textContent="发送中..."
                  visible={this.state.spinner}
                  textStyle={styles.spinnerTextStyle} />
         <ScrollView style={styles.container}
                     contentContainerStyle={styles.contentContainer}
                     ref={component => this.scrollView = component}
-                    onLayout={({ nativeEvent }) => this.adjustScroll(nativeEvent)}>
+                    onLayout={({ nativeEvent }) => this.adjustScroll(nativeEvent)}
+                    bounces={false}>
           <View style={styles.banner}>
             <Image source={banner} style={[styles.bannerImage, bannerSize]} />
           </View>
@@ -162,7 +163,7 @@ export default class KeepAccountScreen extends Component {
                 }
               }}
               showIcon={false}
-              minuteInterval={10}
+              minuteInterval={1}
               onDateChange={(datetime) => {this.updateAccount({ datetime });}}
             />
           </View>
