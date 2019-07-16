@@ -27,7 +27,7 @@
       "supportsTablet": true
     },
     "extra": {
-      "host": "http://192.168.1.95:4000"
+      "host": "http://192.168.2.235:4000"
     }
   }
 }
