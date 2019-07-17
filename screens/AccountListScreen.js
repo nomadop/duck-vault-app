@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import { View, Text, SectionList, StyleSheet } from 'react-native';
 import DropdownAlert from 'react-native-dropdownalert';
 import Spinner from 'react-native-loading-spinner-overlay';
-import moment from 'moment';
 import * as _ from 'lodash';
+
+import { AccountItem } from '../components/AccountItem';
 
 export default class AccountListScreen extends Component {
   constructor() {
@@ -30,61 +31,59 @@ export default class AccountListScreen extends Component {
       });
   }
 
-  renderItem({ item, index }) {
-    return (
-      <View style={styles.account}>
-        <View style={styles.accountType}>
-          <Text style={styles.accountTypeText}>{item.type}</Text>
-        </View>
-        <View style={[styles.accountDetail, index === 0 && styles.firstAccountDetail]}>
-          <View style={styles.accountInfo}>
-            <Text>子类: {item.sub_type}</Text>
-            <Text>商家: {item.merchant}</Text>
-            <Text>备注: {item.comments}</Text>
-            <Text style={styles.accountDatetime}>{moment(item.datetime).format('YYYY-MM-DD HH:mm')}</Text>
-          </View>
-          <View style={styles.accountChange}>
-            <Text style={styles.accountChangeText}>-{item.change}</Text>
-          </View>
-        </View>
-      </View>
-    );
+  deleteAccount(id) {
+    this.setState({ spinner: true });
+    fetch(`${Expo.Constants.manifest.extra.host}/accounts/${id}.json`, { method: 'delete' })
+      .then(response => response.json())
+      .then(accounts => {
+        this.dropDownAlert.alertWithType('success', '删除成功', '');
+        this.setState({ accounts, spinner: false });
+      })
+      .catch(() => {
+        this.dropDownAlert.alertWithType('error', '删除失败', '');
+        this.setState({ spinner: false });
+      });
   }
 
-  renderSectionHeader({ section }) {
+  renderItem = ({ item, index }) => {
+    return <AccountItem item={item} index={index} onDelete={() => this.deleteAccount(item.id)} />
+  };
+
+  renderSectionHeader = ({ section }) => {
     return (
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionHeaderText}>{section.title}</Text>
         <Text style={styles.sectionHeaderText}>总数：{section.total}</Text>
       </View>
     );
-  }
+  };
 
-  renderAccountList() {
-    console.log(this.state.accounts);
+  renderAccountList = (sections = this.state.accounts) => {
     return (
       <View style={styles.container}>
         <SectionList style={styles.container}
                      renderItem={this.renderItem}
                      renderSectionHeader={this.renderSectionHeader}
-                     sections={this.state.accounts}
+                     sections={sections}
                      refreshing={this.state.spinner}
                      onRefresh={() => this.fetchAccounts()}
                      keyExtractor={_.property('id')} />
       </View>
     );
-  }
+  };
 
-  renderContent() {
-    return _.isEmpty(this.state.accounts) ? this.renderEmpty() : this.renderAccountList();
-  }
+  renderContent = () => {
+    return _.isEmpty(this.state.accounts) ?
+      this.renderAccountList([{ title: '无记录', data: [], total: 0 }]) :
+      this.renderAccountList();
+  };
 
-  renderEmpty() {
+  renderEmpty = () => {
     return (
       <View styles={styles.container}>
       </View>
     );
-  }
+  };
 
   render() {
     const content = _.isNil(this.state.accounts) ? this.renderEmpty() : this.renderContent();
@@ -125,43 +124,4 @@ const styles = StyleSheet.create({
   sectionHeaderText: {
     color: '#fff',
   },
-  account: {
-    marginHorizontal: 15,
-    flexDirection: 'row',
-  },
-  accountType: {
-    width: 38,
-    height: 38,
-    padding: 10,
-    marginTop: 12,
-    marginRight: 10,
-    borderRadius: 20,
-    backgroundColor: '#9d9d9d',
-  },
-  accountTypeText: {
-    fontSize: 18,
-    color: '#fff',
-  },
-  accountDetail: {
-    flexGrow: 1,
-    flexDirection: 'row',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderColor: '#ccc',
-  },
-  firstAccountDetail: {
-    borderTopWidth: 0,
-  },
-  accountInfo: {
-    flexGrow: 1,
-  },
-  accountChange: {},
-  accountChangeText: {
-    fontSize: 18,
-    color: '#e84522',
-  },
-  accountDatetime: {
-    paddingTop: 4,
-    color: '#9d9d9d',
-  }
 });
