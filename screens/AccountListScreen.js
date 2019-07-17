@@ -89,7 +89,7 @@ export default class AccountListScreen extends Component {
     const content = _.isNil(this.state.accounts) ? this.renderEmpty() : this.renderContent();
     return (
       <View style={styles.container}>
-        <Spinner textContent="获取记录..."
+        <Spinner textContent="发送中..."
                  visible={this.state.spinner}
                  textStyle={styles.spinnerTextStyle} />
         {content}
@@ -119,9 +119,12 @@ const styles = StyleSheet.create({
     padding: 6,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#ccc',
+    backgroundColor: '#eee',
+    borderBottomWidth: 1,
+    borderTopWidth: 1,
+    borderColor: '#ccc',
   },
   sectionHeaderText: {
-    color: '#fff',
+    color: '#9b9b9b',
   },
 });

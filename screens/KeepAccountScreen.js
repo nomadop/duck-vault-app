@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { KeyboardAvoidingView, Button, ScrollView, StyleSheet, View, Text, TextInput, Image, Dimensions } from 'react-native';
+import { KeyboardAvoidingView, Button, ScrollView, StyleSheet, View, Text, TextInput, Image } from 'react-native';
 import RNPickerSelect, { defaultStyles } from 'react-native-picker-select';
 import DatePicker from 'react-native-datepicker'
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -7,21 +7,12 @@ import DropdownAlert from 'react-native-dropdownalert';
 import Toast from 'react-native-root-toast';
 
 import banner from '../assets/images/banner.gif';
-
-const types = [
-  {
-    label: '吃吃吃',
-    value: '吃吃吃',
-  },
-  {
-    label: '买买买',
-    value: '买买买',
-  },
-];
+import Layout from '../constants/Layout';
+import { Types, SubTypes } from '../constants/Types';
 
 const INIT_ACCOUNT = {
   type: '吃吃吃',
-  sub_type: null,
+  sub_type: '无',
   change: null,
   merchant: null,
   datetime: new Date(),
@@ -34,9 +25,17 @@ export default class KeepAccountScreen extends Component {
     this.state = {
       account: INIT_ACCOUNT,
       spinner: false,
+      subTypes: SubTypes.吃吃吃,
     };
     this.contentHeight = null;
-    this.dimensionWidth = Dimensions.get('window').width;
+  }
+
+  componentDidMount() {
+    this.didFocusSubscription = this.props.navigation.addListener('didFocus', () => this.scrollView.scrollTo({ y: 0 }));
+  }
+
+  componentWillUnmount() {
+    this.didFocusSubscription.remove();
   }
 
   submit() {
@@ -78,14 +77,19 @@ export default class KeepAccountScreen extends Component {
     }
   }
 
-  updateAccount(updates) {
-    this.setState({
-      account: { ...this.state.account, ...updates },
-    });
+  updateAccount(account) {
+    const updates = {
+      account: { ...this.state.account, ...account },
+    };
+    if (account.type) {
+      updates.account.sub_type = INIT_ACCOUNT.sub_type;
+      updates.subTypes = SubTypes[account.type];
+    }
+    this.setState(updates);
   }
 
   render() {
-    const bannerSize = { width: this.dimensionWidth, height: (this.dimensionWidth / 200) * 113 };
+    const bannerSize = { width: Layout.window.width, height: (Layout.window.width / 200) * 113 };
     return (
       <KeyboardAvoidingView style={styles.container} keyboardVerticalOffset={60} behavior="height">
         <Spinner textContent="发送中..."
@@ -101,7 +105,7 @@ export default class KeepAccountScreen extends Component {
           </View>
           <View style={styles.fieldRow}>
             <Text style={styles.fieldLabel}>种类</Text>
-            <RNPickerSelect items={types}
+            <RNPickerSelect items={Types}
                             placeholder={{}}
                             onValueChange={type => this.updateAccount({ type })}
                             style={pickerSelectStyles}
@@ -109,10 +113,11 @@ export default class KeepAccountScreen extends Component {
           </View>
           <View style={styles.fieldRow}>
             <Text style={styles.fieldLabel}>子类</Text>
-            <TextInput style={styles.fieldControl}
-                       value={this.state.account.sub_type}
-                       onChangeText={sub_type => this.updateAccount({ sub_type })}
-                       placeholder="无" />
+            <RNPickerSelect items={this.state.subTypes}
+                            placeholder={{}}
+                            onValueChange={sub_type => this.updateAccount({ sub_type })}
+                            style={pickerSelectStyles}
+                            value={this.state.account.sub_type} />
           </View>
           <View style={styles.fieldRow}>
             <Text style={styles.fieldLabel}>金额</Text>

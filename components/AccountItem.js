@@ -3,6 +3,8 @@ import { Text, View, PanResponder, StyleSheet } from 'react-native';
 import moment from 'moment';
 import * as _ from 'lodash';
 
+import { Types } from '../constants/Types';
+
 export class AccountItem extends Component {
   constructor() {
     super();
@@ -38,10 +40,11 @@ export class AccountItem extends Component {
     const offset = dx > 100 ? 100 + (dx - 100) * 0.3 : dx;
     const accountStyle = { marginLeft: -offset };
     const deleteStyle = { width: offset };
+    const typeStyle = { backgroundColor: _.find(Types, { value: item.type }).color };
     return (
       <View style={styles.container}>
         <View style={[styles.account, accountStyle]}>
-          <View style={styles.accountType}>
+          <View style={[styles.accountType, typeStyle]}>
             <Text style={styles.accountTypeText}>{item.type}</Text>
           </View>
           <View style={[styles.accountDetail, index === 0 && styles.firstAccountDetail]}>
