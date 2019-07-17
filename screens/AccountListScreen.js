@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { View, Text, SectionList, StyleSheet } from 'react-native';
-import Toast from "react-native-root-toast";
+import DropdownAlert from 'react-native-dropdownalert';
 import Spinner from 'react-native-loading-spinner-overlay';
 import moment from 'moment';
 import * as _ from 'lodash';
@@ -25,16 +25,7 @@ export default class AccountListScreen extends Component {
       .then(response => response.json())
       .then(accounts => this.setState({ accounts, spinner: false }))
       .catch(() => {
-        Toast.show('获取失败', {
-          duration: Toast.durations.SHORT,
-          position: Toast.positions.CENTER,
-          shadow: false,
-          animation: true,
-          hideOnPress: true,
-          backgroundColor: 'rgba(203, 0, 53, 0.3)',
-          textColor: '#e84522',
-          delay: 0,
-        });
+        this.dropDownAlert.alertWithType('error', '获取失败', '');
         this.setState({ spinner: false });
       });
   }
@@ -73,9 +64,6 @@ export default class AccountListScreen extends Component {
     console.log(this.state.accounts);
     return (
       <View style={styles.container}>
-        <Spinner textContent="获取记录..."
-                 visible={this.state.spinner}
-                 textStyle={styles.spinnerTextStyle} />
         <SectionList style={styles.container}
                      renderItem={this.renderItem}
                      renderSectionHeader={this.renderSectionHeader}
@@ -94,15 +82,21 @@ export default class AccountListScreen extends Component {
   renderEmpty() {
     return (
       <View styles={styles.container}>
-        <Spinner textContent="获取记录..."
-                 visible={this.state.spinner}
-                 textStyle={styles.spinnerTextStyle} />
       </View>
     );
   }
 
   render() {
-    return _.isNil(this.state.accounts) ? this.renderEmpty() : this.renderContent();
+    const content = _.isNil(this.state.accounts) ? this.renderEmpty() : this.renderContent();
+    return (
+      <View style={styles.container}>
+        <Spinner textContent="获取记录..."
+                 visible={this.state.spinner}
+                 textStyle={styles.spinnerTextStyle} />
+        {content}
+        <DropdownAlert ref={ref => this.dropDownAlert = ref} />
+      </View>
+    )
   }
 }
 

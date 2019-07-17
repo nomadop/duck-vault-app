@@ -3,6 +3,7 @@ import { KeyboardAvoidingView, Button, ScrollView, StyleSheet, View, Text, TextI
 import RNPickerSelect, { defaultStyles } from 'react-native-picker-select';
 import DatePicker from 'react-native-datepicker'
 import Spinner from 'react-native-loading-spinner-overlay';
+import DropdownAlert from 'react-native-dropdownalert';
 import Toast from 'react-native-root-toast';
 
 import banner from '../assets/images/banner.gif';
@@ -57,31 +58,15 @@ export default class KeepAccountScreen extends Component {
       fetch(`${Expo.Constants.manifest.extra.host}/accounts.json`, {
         method: 'post',
         body: JSON.stringify(this.state.account),
-      }).then(() => {
-        Toast.show('保存成功', {
-          duration: Toast.durations.SHORT,
-          position: Toast.positions.CENTER,
-          shadow: false,
-          animation: true,
-          hideOnPress: true,
-          backgroundColor: 'rgba(0, 121, 169, 0.3)',
-          textColor: '#00adef',
-          delay: 0,
+      }).then(response => response.json())
+        .then(() => {
+          this.dropDownAlert.alertWithType('success', '保存成功', '');
+          this.setState({ account: INIT_ACCOUNT, spinner: false });
+        })
+        .catch(() => {
+          this.dropDownAlert.alertWithType('error', '保存失败', '');
+          this.setState({ spinner: false });
         });
-        this.setState({ account: INIT_ACCOUNT, spinner: false });
-      }).catch(() => {
-        Toast.show('保存失败', {
-          duration: Toast.durations.SHORT,
-          position: Toast.positions.CENTER,
-          shadow: false,
-          animation: true,
-          hideOnPress: true,
-          backgroundColor: 'rgba(203, 0, 53, 0.3)',
-          textColor: '#e84522',
-          delay: 0,
-        });
-        this.setState({ spinner: false });
-      });
     });
   }
 
@@ -117,6 +102,7 @@ export default class KeepAccountScreen extends Component {
           <View style={styles.fieldRow}>
             <Text style={styles.fieldLabel}>种类</Text>
             <RNPickerSelect items={types}
+                            placeholder={{}}
                             onValueChange={type => this.updateAccount({ type })}
                             style={pickerSelectStyles}
                             value={this.state.account.type} />
@@ -180,6 +166,7 @@ export default class KeepAccountScreen extends Component {
             color="#00adef"
           />
         </ScrollView>
+        <DropdownAlert ref={ref => this.dropDownAlert = ref} />
       </KeyboardAvoidingView>
     );
   }
