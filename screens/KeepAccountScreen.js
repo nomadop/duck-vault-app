@@ -54,7 +54,7 @@ export default class KeepAccountScreen extends Component {
     }
 
     this.setState({ spinner: true }, () => {
-      fetch(`http://192.168.1.120:4000/accounts.json`, {
+      fetch(`${Expo.Constants.manifest.extra.host}/accounts.json`, {
         method: 'post',
         body: JSON.stringify(this.state.account),
       }).then(() => {

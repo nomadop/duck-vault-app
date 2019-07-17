@@ -21,7 +21,7 @@ export default class AccountListScreen extends Component {
 
   fetchAccounts() {
     this.setState({ spinner: true });
-    fetch(`http://192.168.1.120:4000/accounts/section`)
+    fetch(`${Expo.Constants.manifest.extra.host}/accounts/section`)
       .then(response => response.json())
       .then(accounts => this.setState({ accounts, spinner: false }))
       .catch(() => {
