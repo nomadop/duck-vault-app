@@ -12,6 +12,7 @@ import banner from '../assets/images/banner.gif';
 import Layout from '../constants/Layout';
 import { Types, SubTypes } from '../constants/Types';
 import Environment from '../constants/Environment';
+import Colors from '../constants/Colors';
 
 const initAccount = () => ({
   type: '吃吃吃',
@@ -168,7 +169,9 @@ export default class KeepAccountScreen extends Component {
             color="#00adef"
           />
         </KeyboardAwareScrollView>
-        <DropdownAlert ref={ref => this.dropDownAlert = ref} />
+        <DropdownAlert ref={ref => this.dropDownAlert = ref}
+                       successColor={Colors.alertSuccessBackground}
+                       errorColor={Colors.alertErrorBackground} />
       </View>
     );
   }

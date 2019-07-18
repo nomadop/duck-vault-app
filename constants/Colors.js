@@ -11,4 +11,6 @@ export default {
   warningText: '#666804',
   noticeBackground: tintColor,
   noticeText: '#fff',
+  alertSuccessBackground: 'rgba(106, 183, 103, 0.8)',
+  alertErrorBackground: 'rgba(232, 69, 34, 0.8)',
 };

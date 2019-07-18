@@ -7,6 +7,7 @@ import * as _ from 'lodash';
 import { AccountItem } from '../components/AccountItem';
 import Environment from '../constants/Environment';
 import Toast from "react-native-root-toast";
+import Colors from '../constants/Colors';
 
 export default class AccountListScreen extends Component {
   constructor() {
@@ -99,7 +100,9 @@ export default class AccountListScreen extends Component {
                  visible={this.state.spinner}
                  textStyle={styles.spinnerTextStyle} />
         {content}
-        <DropdownAlert ref={ref => this.dropDownAlert = ref} />
+        <DropdownAlert ref={ref => this.dropDownAlert = ref}
+                       successColor={Colors.alertSuccessBackground}
+                       errorColor={Colors.alertErrorBackground} />
       </View>
     )
   }
