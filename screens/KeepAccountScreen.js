@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { KeyboardAvoidingView, Button, ScrollView, StyleSheet, View, Text, TextInput, Image } from 'react-native';
+import { Button, StyleSheet, View, Text, TextInput, Image } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import RNPickerSelect, { defaultStyles } from 'react-native-picker-select';
 import DatePicker from 'react-native-datepicker'
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -12,28 +13,29 @@ import Layout from '../constants/Layout';
 import { Types, SubTypes } from '../constants/Types';
 import Environment from '../constants/Environment';
 
-const INIT_ACCOUNT = {
+const initAccount = () => ({
   type: '吃吃吃',
   sub_type: '无',
   change: null,
   merchant: null,
   datetime: new Date(),
   comments: null,
-};
+});
 
 export default class KeepAccountScreen extends Component {
   constructor() {
     super();
     this.state = {
-      account: INIT_ACCOUNT,
+      account: initAccount(),
       spinner: false,
       subTypes: SubTypes.吃吃吃,
     };
-    this.contentHeight = null;
   }
 
   componentDidMount() {
-    this.didFocusSubscription = this.props.navigation.addListener('didFocus', () => this.scrollView.scrollTo({ y: 0 }));
+    this.didFocusSubscription = this.props.navigation.addListener('didFocus', () => {
+      this.setState({ account: initAccount() });
+    });
   }
 
   componentWillUnmount() {
@@ -65,7 +67,7 @@ export default class KeepAccountScreen extends Component {
       }).then(response => response.json())
         .then(() => {
           this.dropDownAlert.alertWithType('success', '保存成功', '');
-          this.setState({ account: INIT_ACCOUNT, spinner: false });
+          this.setState({ account: initAccount(), spinner: false });
         })
         .catch(() => {
           this.dropDownAlert.alertWithType('error', '保存失败', '');
@@ -74,20 +76,12 @@ export default class KeepAccountScreen extends Component {
     });
   }
 
-  adjustScroll({ layout }) {
-    if (this.contentHeight) {
-      this.scrollView.scrollTo({ y: this.contentHeight - layout.height });
-    } else {
-      this.contentHeight = layout.height;
-    }
-  }
-
   updateAccount(account) {
     const updates = {
       account: { ...this.state.account, ...account },
     };
     if (account.type) {
-      updates.account.sub_type = INIT_ACCOUNT.sub_type;
+      updates.account.sub_type = initAccount().sub_type;
       updates.subTypes = SubTypes[account.type];
     }
     this.setState(updates);
@@ -96,15 +90,13 @@ export default class KeepAccountScreen extends Component {
   render() {
     const bannerSize = { width: Layout.window.width, height: (Layout.window.width / 200) * 113 };
     return (
-      <KeyboardAvoidingView style={styles.container} keyboardVerticalOffset={60} behavior="height">
+      <View style={styles.container}>
         <Spinner textContent="发送中..."
                  visible={this.state.spinner}
                  textStyle={styles.spinnerTextStyle} />
-        <ScrollView style={styles.container}
-                    contentContainerStyle={styles.contentContainer}
-                    ref={component => this.scrollView = component}
-                    onLayout={({ nativeEvent }) => this.adjustScroll(nativeEvent)}
-                    bounces={false}>
+        <KeyboardAwareScrollView style={styles.container}
+                                 contentContainerStyle={styles.contentContainer}
+                                 bounces={false}>
           <View style={styles.banner}>
             <Image source={banner} style={[styles.bannerImage, bannerSize]} />
           </View>
@@ -175,9 +167,9 @@ export default class KeepAccountScreen extends Component {
             title="提交"
             color="#00adef"
           />
-        </ScrollView>
+        </KeyboardAwareScrollView>
         <DropdownAlert ref={ref => this.dropDownAlert = ref} />
-      </KeyboardAvoidingView>
+      </View>
     );
   }
 }

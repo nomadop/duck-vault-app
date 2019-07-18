@@ -6,6 +6,7 @@ import * as _ from 'lodash';
 
 import { AccountItem } from '../components/AccountItem';
 import Environment from '../constants/Environment';
+import Toast from "react-native-root-toast";
 
 export default class AccountListScreen extends Component {
   constructor() {
@@ -14,20 +15,27 @@ export default class AccountListScreen extends Component {
   }
 
   componentDidMount() {
-    this.didFocusSubscription = this.props.navigation.addListener('didFocus', () => this.fetchAccounts());
-  }
-
-  componentWillUnmount() {
-    this.didFocusSubscription.remove();
+    this.fetchAccounts();
   }
 
   fetchAccounts() {
     this.setState({ refreshing: true });
     fetch(`${Environment.host}/accounts/section`)
       .then(response => response.json())
-      .then(accounts => this.setState({ accounts, refreshing: false }))
+      .then(accounts => {
+        Toast.show('载入完成', {
+          duration: 300,
+          position: Toast.positions.CENTER,
+          shadow: false,
+          animation: true,
+          hideOnPress: true,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          delay: 0,
+        });
+        this.setState({ accounts, refreshing: false });
+      })
       .catch(() => {
-        this.dropDownAlert.alertWithType('error', '获取失败', '');
+        this.dropDownAlert.alertWithType('error', '载入失败', '');
         this.setState({ refreshing: false });
       });
   }
@@ -80,11 +88,7 @@ export default class AccountListScreen extends Component {
   };
 
   renderEmpty = () => {
-    return (
-      <View styles={[styles.container, styles.contentContainer]}>
-        <ActivityIndicator />
-      </View>
-    );
+    return <ActivityIndicator style={styles.container} size="large" />;
   };
 
   render() {
@@ -109,10 +113,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  contentContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   spinnerTextStyle: {
     color: '#eee',
