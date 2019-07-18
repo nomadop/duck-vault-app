@@ -64,7 +64,7 @@ const AccountListStack = createStackNavigator(
 );
 
 AccountListStack.navigationOptions = {
-  tabBarLabel: '查账',
+  tabBarLabel: '账单',
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}

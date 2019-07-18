@@ -16,7 +16,11 @@ export default class AccountListScreen extends Component {
   }
 
   componentDidMount() {
-    this.fetchAccounts();
+    this.didFocusSubscription = this.props.navigation.addListener('didFocus', () => this.fetchAccounts());
+  }
+
+  componentWillUnmount() {
+    this.didFocusSubscription.remove();
   }
 
   fetchAccounts() {
@@ -109,7 +113,7 @@ export default class AccountListScreen extends Component {
 }
 
 AccountListScreen.navigationOptions = {
-  title: '查账',
+  title: '查询账单',
 };
 
 const styles = StyleSheet.create({

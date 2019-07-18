@@ -24,7 +24,7 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false
     },
     "extra": {
       "host": "http://192.168.1.120:4000"
