@@ -9,6 +9,7 @@ import Toast from 'react-native-root-toast';
 import banner from '../assets/images/banner.gif';
 import Layout from '../constants/Layout';
 import { Types, SubTypes } from '../constants/Types';
+import Environment from '../constants/Environment';
 
 const INIT_ACCOUNT = {
   type: '吃吃吃',
@@ -54,7 +55,7 @@ export default class KeepAccountScreen extends Component {
     }
 
     this.setState({ spinner: true }, () => {
-      fetch(`${Expo.Constants.manifest.extra.host}/accounts.json`, {
+      fetch(`${Environment.host}/accounts.json`, {
         method: 'post',
         body: JSON.stringify(this.state.account),
       }).then(response => response.json())

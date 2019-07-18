@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
-import { View, Text, SectionList, StyleSheet } from 'react-native';
+import { View, Text, SectionList, StyleSheet, ActivityIndicator } from 'react-native';
 import DropdownAlert from 'react-native-dropdownalert';
 import Spinner from 'react-native-loading-spinner-overlay';
 import * as _ from 'lodash';
 
 import { AccountItem } from '../components/AccountItem';
+import Environment from '../constants/Environment';
 
 export default class AccountListScreen extends Component {
   constructor() {
     super();
-    this.state = { accounts: null, spinner: false };
+    this.state = { accounts: null, refreshing: false, spinner: false };
   }
 
   componentDidMount() {
@@ -21,19 +22,19 @@ export default class AccountListScreen extends Component {
   }
 
   fetchAccounts() {
-    this.setState({ spinner: true });
-    fetch(`${Expo.Constants.manifest.extra.host}/accounts/section`)
+    this.setState({ refreshing: true });
+    fetch(`${Environment.host}/accounts/section`)
       .then(response => response.json())
-      .then(accounts => this.setState({ accounts, spinner: false }))
+      .then(accounts => this.setState({ accounts, refreshing: false }))
       .catch(() => {
         this.dropDownAlert.alertWithType('error', '获取失败', '');
-        this.setState({ spinner: false });
+        this.setState({ refreshing: false });
       });
   }
 
   deleteAccount(id) {
     this.setState({ spinner: true });
-    fetch(`${Expo.Constants.manifest.extra.host}/accounts/${id}.json`, { method: 'delete' })
+    fetch(`${Environment.host}/accounts/${id}.json`, { method: 'delete' })
       .then(response => response.json())
       .then(accounts => {
         this.dropDownAlert.alertWithType('success', '删除成功', '');
@@ -65,7 +66,7 @@ export default class AccountListScreen extends Component {
                      renderItem={this.renderItem}
                      renderSectionHeader={this.renderSectionHeader}
                      sections={sections}
-                     refreshing={this.state.spinner}
+                     refreshing={this.state.refreshing}
                      onRefresh={() => this.fetchAccounts()}
                      keyExtractor={_.property('id')} />
       </View>
@@ -80,7 +81,8 @@ export default class AccountListScreen extends Component {
 
   renderEmpty = () => {
     return (
-      <View styles={styles.container}>
+      <View styles={[styles.container, styles.contentContainer]}>
+        <ActivityIndicator />
       </View>
     );
   };
@@ -109,6 +111,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   contentContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   spinnerTextStyle: {
     color: '#eee',
