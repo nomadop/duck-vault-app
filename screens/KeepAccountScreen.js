@@ -5,6 +5,7 @@ import DatePicker from 'react-native-datepicker'
 import Spinner from 'react-native-loading-spinner-overlay';
 import DropdownAlert from 'react-native-dropdownalert';
 import Toast from 'react-native-root-toast';
+import moment from 'moment';
 
 import banner from '../assets/images/banner.gif';
 import Layout from '../constants/Layout';
@@ -57,7 +58,10 @@ export default class KeepAccountScreen extends Component {
     this.setState({ spinner: true }, () => {
       fetch(`${Environment.host}/accounts.json`, {
         method: 'post',
-        body: JSON.stringify(this.state.account),
+        body: JSON.stringify({
+          ...this.state.account,
+          datetime: moment(this.state.account.datetime).toISOString(),
+        }),
       }).then(response => response.json())
         .then(() => {
           this.dropDownAlert.alertWithType('success', '保存成功', '');
