@@ -8,6 +8,7 @@ import { AccountItem } from '../components/AccountItem';
 import Environment from '../constants/Environment';
 import Toast from "react-native-root-toast";
 import Colors from '../constants/Colors';
+import { requireLogin } from '../helpers/User';
 
 export default class AccountListScreen extends Component {
   constructor() {
@@ -24,39 +25,47 @@ export default class AccountListScreen extends Component {
   }
 
   fetchAccounts() {
-    this.setState({ refreshing: true });
-    fetch(`${Environment.host}/accounts/section`)
-      .then(response => response.json())
-      .then(accounts => {
-        Toast.show('载入完成', {
-          duration: 300,
-          position: Toast.positions.CENTER,
-          shadow: false,
-          animation: true,
-          hideOnPress: true,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          delay: 0,
+    requireLogin().then(token => {
+      this.setState({ refreshing: true });
+      fetch(`${Environment.host}/accounts/section`, {
+        headers: { 'Authorization': token },
+      }).then(response => response.json())
+        .then(accounts => {
+          Toast.show('载入完成', {
+            duration: 300,
+            position: Toast.positions.CENTER,
+            shadow: false,
+            animation: true,
+            hideOnPress: true,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            delay: 0,
+          });
+          this.setState({ accounts, refreshing: false });
+        })
+        .catch(() => {
+          this.dropDownAlert.alertWithType('error', '载入失败', '');
+          this.setState({ refreshing: false });
         });
-        this.setState({ accounts, refreshing: false });
-      })
-      .catch(() => {
-        this.dropDownAlert.alertWithType('error', '载入失败', '');
-        this.setState({ refreshing: false });
-      });
+    });
   }
 
   deleteAccount(id) {
-    this.setState({ spinner: true });
-    fetch(`${Environment.host}/accounts/${id}.json`, { method: 'delete' })
-      .then(response => response.json())
-      .then(accounts => {
-        this.dropDownAlert.alertWithType('success', '删除成功', '');
-        this.setState({ accounts, spinner: false });
-      })
-      .catch(() => {
-        this.dropDownAlert.alertWithType('error', '删除失败', '');
-        this.setState({ spinner: false });
-      });
+    requireLogin().then(token => {
+      this.setState({ spinner: true });
+      fetch(`${Environment.host}/accounts/${id}/inactive`, {
+        method: 'post',
+        headers: { 'Authorization': token },
+      }).then(response => response.json())
+        .then(() => {
+          this.dropDownAlert.alertWithType('success', '删除成功', '');
+          this.setState({ spinner: false });
+          this.fetchAccounts();
+        })
+        .catch(() => {
+          this.dropDownAlert.alertWithType('error', '删除失败', '');
+          this.setState({ spinner: false });
+        });
+    });
   }
 
   renderItem = ({ item, index }) => {
@@ -93,7 +102,7 @@ export default class AccountListScreen extends Component {
   };
 
   renderEmpty = () => {
-    return <ActivityIndicator style={styles.container} size="large" />;
+    return this.state.spinner ? <ActivityIndicator style={styles.container} size="large" /> : <View />;
   };
 
   render() {

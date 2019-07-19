@@ -13,6 +13,7 @@ import Layout from '../constants/Layout';
 import { Types, SubTypes } from '../constants/Types';
 import Environment from '../constants/Environment';
 import Colors from '../constants/Colors';
+import { requireLogin } from '../helpers/User';
 
 const initAccount = () => ({
   type: '吃吃吃',
@@ -43,7 +44,7 @@ export default class KeepAccountScreen extends Component {
     this.didFocusSubscription.remove();
   }
 
-  submit() {
+  validate() {
     if (this.state.account.change <= 0) {
       Toast.show('输入金额', {
         duration: 300,
@@ -55,12 +56,18 @@ export default class KeepAccountScreen extends Component {
         textColor: '#e84522',
         delay: 0,
       });
-      return;
+      return false;
     }
 
-    this.setState({ spinner: true }, () => {
+    return true;
+  }
+
+  submit() {
+    requireLogin().then(token => {
+      this.setState({ spinner: true });
       fetch(`${Environment.host}/accounts.json`, {
         method: 'post',
+        headers: { 'Authorization': token },
         body: JSON.stringify({
           ...this.state.account,
           datetime: moment(this.state.account.datetime).toISOString(),
@@ -164,7 +171,7 @@ export default class KeepAccountScreen extends Component {
                        placeholder="无" />
           </View>
           <Button
-            onPress={() => this.submit()}
+            onPress={() => this.validate() && this.submit()}
             title="提交"
             color="#00adef"
           />
