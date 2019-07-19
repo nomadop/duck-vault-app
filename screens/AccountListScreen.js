@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { View, Text, SectionList, StyleSheet, ActivityIndicator } from 'react-native';
 import DropdownAlert from 'react-native-dropdownalert';
 import Spinner from 'react-native-loading-spinner-overlay';
+import Search from 'react-native-search-box';
 import * as _ from 'lodash';
 
 import { AccountItem } from '../components/AccountItem';
@@ -24,12 +25,15 @@ export default class AccountListScreen extends Component {
     this.didFocusSubscription.remove();
   }
 
-  fetchAccounts() {
+  fetchAccounts(keyword = null) {
     requireLogin().then(token => {
       this.setState({ refreshing: true });
-      fetch(`${Environment.host}/accounts/section`, {
-        headers: { 'Authorization': token },
-      }).then(response => response.json())
+      let url = `${Environment.host}/accounts/section`;
+      if (keyword) {
+        url = `${url}?keyword=${encodeURIComponent(keyword)}`;
+      }
+      fetch(url, { headers: { 'Authorization': token } })
+        .then(response => response.json())
         .then(accounts => {
           Toast.show('载入完成', {
             duration: 300,
@@ -84,6 +88,11 @@ export default class AccountListScreen extends Component {
   renderAccountList = (sections = this.state.accounts) => {
     return (
       <View style={styles.container}>
+        <Search ref="searchBox"
+                backgroundColor="#fff"
+                cancelButtonTextStyle={styles.searchCancelText}
+                onSearch={keyword => this.fetchAccounts(keyword)}
+                onCancel={() => this.fetchAccounts()}/>
         <SectionList style={styles.container}
                      renderItem={this.renderItem}
                      renderSectionHeader={this.renderSectionHeader}
@@ -145,6 +154,9 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
   },
   sectionHeaderText: {
+    color: '#9b9b9b',
+  },
+  searchCancelText: {
     color: '#9b9b9b',
   },
 });

@@ -33,12 +33,16 @@ export default class KeepAccountScreen extends Component {
       account: initAccount(),
       spinner: false,
       subTypes: SubTypes.吃吃吃,
+      bannerSource: _.sample([banner, banner2]),
     };
   }
 
   componentDidMount() {
     this.didFocusSubscription = this.props.navigation.addListener('didFocus', () => {
-      this.setState({ account: initAccount() });
+      this.setState({
+        account: initAccount(),
+        bannerSource: _.sample([banner, banner2]),
+      });
     });
   }
 
@@ -99,7 +103,6 @@ export default class KeepAccountScreen extends Component {
 
   render() {
     const bannerSize = { width: Layout.window.width, height: (Layout.window.width / 200) * 113 };
-    const bannerSource = _.sample([banner, banner2]);
     return (
       <View style={styles.container}>
         <Spinner textContent="发送中..."
@@ -109,7 +112,7 @@ export default class KeepAccountScreen extends Component {
                                  contentContainerStyle={styles.contentContainer}
                                  bounces={false}>
           <View style={styles.banner}>
-            <Image source={bannerSource} style={[styles.bannerImage, bannerSize]} />
+            <Image source={this.state.bannerSource} style={[styles.bannerImage, bannerSize]} />
           </View>
           <View style={styles.fieldRow}>
             <Text style={styles.fieldLabel}>种类</Text>
