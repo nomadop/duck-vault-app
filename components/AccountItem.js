@@ -52,6 +52,7 @@ export class AccountItem extends Component {
               <Text>子类: {item.sub_type}</Text>
               <Text>商家: {item.merchant}</Text>
               <Text>备注: {item.comments}</Text>
+              <Text style={styles.accountUsername}>{item.username}</Text>
               <Text style={styles.accountDatetime}>{moment(item.datetime).format('YYYY-MM-DD HH:mm')}</Text>
             </View>
             <View style={styles.accountChange} {...this._panResponder.panHandlers}>
@@ -112,8 +113,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#e84522',
   },
-  accountDatetime: {
+  accountUsername: {
     paddingTop: 4,
+    fontSize: 14,
+    color: '#9d9d9d',
+  },
+  accountDatetime: {
+    fontSize: 12,
     color: '#9d9d9d',
   },
   accountDelete: {
