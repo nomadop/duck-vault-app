@@ -102,7 +102,7 @@ export default class AccountListScreen extends Component {
   };
 
   renderEmpty = () => {
-    return this.state.spinner ? <ActivityIndicator style={styles.container} size="large" /> : <View />;
+    return this.state.refreshing ? <ActivityIndicator style={styles.container} size="large" /> : <View />;
   };
 
   render() {
