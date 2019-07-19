@@ -7,8 +7,10 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import DropdownAlert from 'react-native-dropdownalert';
 import Toast from 'react-native-root-toast';
 import moment from 'moment';
+import * as _ from 'lodash';
 
 import banner from '../assets/images/banner.gif';
+import banner2 from '../assets/images/banner2.gif';
 import Layout from '../constants/Layout';
 import { Types, SubTypes } from '../constants/Types';
 import Environment from '../constants/Environment';
@@ -97,6 +99,7 @@ export default class KeepAccountScreen extends Component {
 
   render() {
     const bannerSize = { width: Layout.window.width, height: (Layout.window.width / 200) * 113 };
+    const bannerSource = _.sample([banner, banner2]);
     return (
       <View style={styles.container}>
         <Spinner textContent="发送中..."
@@ -106,7 +109,7 @@ export default class KeepAccountScreen extends Component {
                                  contentContainerStyle={styles.contentContainer}
                                  bounces={false}>
           <View style={styles.banner}>
-            <Image source={banner} style={[styles.bannerImage, bannerSize]} />
+            <Image source={bannerSource} style={[styles.bannerImage, bannerSize]} />
           </View>
           <View style={styles.fieldRow}>
             <Text style={styles.fieldLabel}>种类</Text>
