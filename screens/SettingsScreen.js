@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
-import { Button, KeyboardAvoidingView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, Image, KeyboardAvoidingView, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import Environment from '../constants/Environment';
 import DropdownAlert from 'react-native-dropdownalert';
-import Colors from '../constants/Colors';
 import Spinner from 'react-native-loading-spinner-overlay';
+
+import Colors from '../constants/Colors';
+import Environment from '../constants/Environment';
+import Layout from '../constants/Layout';
+import login from '../assets/images/login.png';
+import avatar from '../assets/images/avatar.png';
 
 export default class SettingsScreen extends Component {
   constructor() {
@@ -43,6 +47,7 @@ export default class SettingsScreen extends Component {
   renderSettings = () => {
     return (
       <View style={[styles.container, styles.contentContainer]}>
+        <Image source={avatar} />
         <Text style={styles.username}>{this.state.userInfo.username}</Text>
         <Button onPress={this.logout} title="登出" color="#00adef" />
       </View>
@@ -50,15 +55,19 @@ export default class SettingsScreen extends Component {
   };
 
   renderLogin = () => {
+    const bannerSize = { width: Layout.window.width, height: (Layout.window.width / 500) * 287 };
     return (
-      <KeyboardAvoidingView style={[styles.container, styles.contentContainer]} behavior="height">
-        <View style={styles.fieldRow}>
-          <Text style={styles.fieldLabel}>密码</Text>
-          <TextInput style={styles.fieldControl}
-                     value={this.state.password}
-                     onChangeText={password => this.setState({ password })} />
+      <KeyboardAvoidingView style={styles.container} behavior="height">
+        <Image source={login} style={[styles.bannerImage, bannerSize]} />
+        <View style={styles.loginContainer}>
+          <View style={styles.fieldRow}>
+            <Text style={styles.fieldLabel}>密码</Text>
+            <TextInput style={styles.fieldControl}
+                       value={this.state.password}
+                       onChangeText={password => this.setState({ password })} />
+          </View>
+          <Button onPress={this.login} title="登录" color="#00adef" />
         </View>
-        <Button onPress={this.login} title="登录" color="#00adef" />
       </KeyboardAvoidingView>
     )
   };
@@ -89,8 +98,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   contentContainer: {
-    justifyContent: 'center',
+    flex: 1,
     alignItems: 'center',
+    paddingVertical: 80,
+  },
+  loginContainer: {
+    marginTop: 15,
+  },
+  bannerImage: {
+    resizeMode: 'contain'
   },
   username: {
     padding: 16,
