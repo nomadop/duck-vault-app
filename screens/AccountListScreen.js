@@ -25,7 +25,7 @@ export default class AccountListScreen extends Component {
     this.didFocusSubscription.remove();
   }
 
-  fetchAccounts(keyword = null) {
+  fetchAccounts(keyword = _.get(this.searchBox, 'state.keyword', null)) {
     requireLogin().then(token => {
       this.setState({ refreshing: true });
       let url = `${Environment.host}/accounts/section`;
@@ -88,11 +88,11 @@ export default class AccountListScreen extends Component {
   renderAccountList = (sections = this.state.accounts) => {
     return (
       <View style={styles.container}>
-        <Search ref="searchBox"
+        <Search ref={ref => this.searchBox = ref}
                 backgroundColor="#fff"
                 cancelButtonTextStyle={styles.searchCancelText}
                 onSearch={keyword => this.fetchAccounts(keyword)}
-                onCancel={() => this.fetchAccounts()}/>
+                onCancel={() => this.fetchAccounts(null)}/>
         <SectionList style={styles.container}
                      renderItem={this.renderItem}
                      renderSectionHeader={this.renderSectionHeader}
