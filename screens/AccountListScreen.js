@@ -28,9 +28,9 @@ export default class AccountListScreen extends Component {
   fetchAccounts(keyword = _.get(this.searchBox, 'state.keyword', null)) {
     requireLogin().then(token => {
       this.setState({ refreshing: true });
-      let url = `${Environment.host}/accounts/section`;
+      const url = new URL(`${Environment.host}/accounts/section`);
       if (keyword) {
-        url = `${url}?keyword=${encodeURIComponent(keyword)}`;
+        url.searchParams.append('keyword', encodeURIComponent(keyword));
       }
       fetch(url, { headers: { 'Authorization': token } })
         .then(response => response.json())
