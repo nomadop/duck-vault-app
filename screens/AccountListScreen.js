@@ -52,14 +52,17 @@ export default class AccountListScreen extends Component {
   }
 
   componentDidMount() {
-    this.didFocusSubscription = this.props.navigation.addListener('didFocus', () => this.refreshAccounts());
+    this.didFocusSubscription = this.props.navigation.addListener('didFocus', () => {
+      this.sectionList && this.sectionList.scrollToLocation({ sectionIndex: 0, itemIndex: 0, animated: false });
+      this.refreshAccounts();
+    });
   }
 
   componentWillUnmount() {
     this.didFocusSubscription.remove();
   }
 
-  fetchAccounts() {
+  fetchAccounts(loadMore) {
     requireLogin().then(token => {
       this.setState({ refreshing: true });
       const { anchor, keyword } = this.state;
@@ -73,12 +76,12 @@ export default class AccountListScreen extends Component {
       fetch(url, { headers: { 'Authorization': token } })
         .then(response => response.json())
         .then(({ accounts, anchor, end_reached: endReached }) => {
-          const combined = combineSections(this.state.accounts, accounts);
-          this.setState({ accounts: combined, anchor, endReached, refreshing: false }, () => {
+          const sections = loadMore ? combineSections(this.state.accounts, accounts) : accounts;
+          this.setState({ accounts: sections, anchor, endReached, refreshing: false }, () => {
             showSuccessToast();
             if (this.loadMoreAfterFetch) {
               this.loadMoreAfterFetch = false;
-              this.fetchAccounts();
+              this.fetchAccounts(true);
             }
           });
         })
@@ -99,7 +102,7 @@ export default class AccountListScreen extends Component {
         .then(() => {
           this.dropDownAlert.alertWithType('success', '删除成功', '');
           this.setState({ spinner: false });
-          this.fetchAccounts();
+          this.refreshAccounts();
         })
         .catch(() => {
           this.dropDownAlert.alertWithType('error', '删除失败', '');
@@ -109,7 +112,7 @@ export default class AccountListScreen extends Component {
   }
 
   refreshAccounts(keyword = this.state.keyword) {
-    this.setState({ accounts: null, anchor: null, endReached: false, keyword }, () => this.fetchAccounts());
+    this.setState({ anchor: null, endReached: false, keyword }, () => this.fetchAccounts(false));
   }
 
   loadMore = _.debounce(() => {
@@ -121,7 +124,7 @@ export default class AccountListScreen extends Component {
       return this.loadMoreAfterFetch = true;
     }
 
-    this.fetchAccounts();
+    this.fetchAccounts(true);
   }, 500);
 
   renderItem = ({ item, index }) => {
@@ -144,7 +147,8 @@ export default class AccountListScreen extends Component {
                 cancelButtonTextStyle={styles.searchCancelText}
                 onSearch={keyword => this.refreshAccounts(keyword)}
                 onCancel={() => this.refreshAccounts(null)}/>
-        <SectionList style={styles.container}
+        <SectionList ref={ref => this.sectionList = ref}
+                     style={styles.container}
                      renderItem={this.renderItem}
                      renderSectionHeader={this.renderSectionHeader}
                      sections={sections}
