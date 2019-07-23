@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Text, View, PanResponder, StyleSheet } from 'react-native';
+import { PanResponder, StyleSheet, Text, View } from 'react-native';
 import moment from 'moment';
 import * as _ from 'lodash';
 
 import { Types } from '../constants/Types';
+import { currency } from '../helpers/Number';
 
 export class AccountItem extends Component {
   constructor() {
@@ -56,7 +57,7 @@ export class AccountItem extends Component {
               <Text style={styles.accountDatetime}>{moment(item.datetime).format('YYYY-MM-DD HH:mm')}</Text>
             </View>
             <View style={styles.accountChange} {...this._panResponder.panHandlers}>
-              <Text style={styles.accountChangeText}>-{item.change}</Text>
+              <Text style={styles.accountChangeText}>-{currency(item.change)}</Text>
             </View>
           </View>
         </View>

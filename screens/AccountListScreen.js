@@ -3,48 +3,84 @@ import { View, Text, SectionList, StyleSheet, ActivityIndicator } from 'react-na
 import DropdownAlert from 'react-native-dropdownalert';
 import Spinner from 'react-native-loading-spinner-overlay';
 import Search from 'react-native-search-box';
+import Toast from "react-native-root-toast";
 import * as _ from 'lodash';
 
 import { AccountItem } from '../components/AccountItem';
-import Environment from '../constants/Environment';
-import Toast from "react-native-root-toast";
-import Colors from '../constants/Colors';
 import { requireLogin } from '../helpers/User';
+import { currency } from '../helpers/Number';
+import Environment from '../constants/Environment';
+import Colors from '../constants/Colors';
+
+function showSuccessToast() {
+  Toast.show('载入完成', {
+    duration: 300,
+    position: Toast.positions.CENTER,
+    shadow: false,
+    animation: true,
+    hideOnPress: true,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    delay: 0,
+  });
+}
+
+function combineSections(prev, next) {
+  if (_.isEmpty(prev)) {
+    return next;
+  }
+
+  if (_.get(prev, `${prev.length - 1}.title`) === _.get(next, '0.title')) {
+    const { data, title, total } = _.last(prev);
+    const combinedSection = { title, total , data: data.concat(next[0].data) };
+    return _.concat(_.initial(prev), combinedSection, _.tail(next));
+  } else {
+    return prev.concat(next);
+  }
+}
 
 export default class AccountListScreen extends Component {
   constructor() {
     super();
-    this.state = { accounts: null, refreshing: false, spinner: false };
+    this.state = {
+      anchor: null,
+      keyword: null,
+      accounts: null,
+      endReached: false,
+      refreshing: false,
+      spinner: false,
+    };
   }
 
   componentDidMount() {
-    this.didFocusSubscription = this.props.navigation.addListener('didFocus', () => this.fetchAccounts());
+    this.didFocusSubscription = this.props.navigation.addListener('didFocus', () => this.refreshAccounts());
   }
 
   componentWillUnmount() {
     this.didFocusSubscription.remove();
   }
 
-  fetchAccounts(keyword = _.get(this.searchBox, 'state.keyword', null)) {
+  fetchAccounts() {
     requireLogin().then(token => {
       this.setState({ refreshing: true });
+      const { anchor, keyword } = this.state;
       const url = new URL(`${Environment.host}/accounts/section`);
       if (keyword) {
         url.searchParams.append('keyword', encodeURIComponent(keyword));
       }
+      if (anchor) {
+        url.searchParams.append('anchor', anchor);
+      }
       fetch(url, { headers: { 'Authorization': token } })
         .then(response => response.json())
-        .then(accounts => {
-          Toast.show('载入完成', {
-            duration: 300,
-            position: Toast.positions.CENTER,
-            shadow: false,
-            animation: true,
-            hideOnPress: true,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            delay: 0,
+        .then(({ accounts, anchor, end_reached: endReached }) => {
+          const combined = combineSections(this.state.accounts, accounts);
+          this.setState({ accounts: combined, anchor, endReached, refreshing: false }, () => {
+            showSuccessToast();
+            if (this.loadMoreAfterFetch) {
+              this.loadMoreAfterFetch = false;
+              this.fetchAccounts();
+            }
           });
-          this.setState({ accounts, refreshing: false });
         })
         .catch(() => {
           this.dropDownAlert.alertWithType('error', '载入失败', '');
@@ -72,6 +108,22 @@ export default class AccountListScreen extends Component {
     });
   }
 
+  refreshAccounts(keyword = this.state.keyword) {
+    this.setState({ accounts: null, anchor: null, endReached: false, keyword }, () => this.fetchAccounts());
+  }
+
+  loadMore = _.debounce(() => {
+    if (this.state.endReached) {
+      return;
+    }
+
+    if (this.state.refreshing) {
+      return this.loadMoreAfterFetch = true;
+    }
+
+    this.fetchAccounts();
+  }, 500);
+
   renderItem = ({ item, index }) => {
     return <AccountItem item={item} index={index} onDelete={() => this.deleteAccount(item.id)} />
   };
@@ -80,7 +132,7 @@ export default class AccountListScreen extends Component {
     return (
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionHeaderText}>{section.title}</Text>
-        <Text style={styles.sectionHeaderText}>总数：{section.total}</Text>
+        <Text style={styles.sectionHeaderText}>总数：{currency(section.total)}</Text>
       </View>
     );
   };
@@ -88,17 +140,18 @@ export default class AccountListScreen extends Component {
   renderAccountList = (sections = this.state.accounts) => {
     return (
       <View style={styles.container}>
-        <Search ref={ref => this.searchBox = ref}
-                backgroundColor="#fff"
+        <Search backgroundColor="#fff"
                 cancelButtonTextStyle={styles.searchCancelText}
-                onSearch={keyword => this.fetchAccounts(keyword)}
-                onCancel={() => this.fetchAccounts(null)}/>
+                onSearch={keyword => this.refreshAccounts(keyword)}
+                onCancel={() => this.refreshAccounts(null)}/>
         <SectionList style={styles.container}
                      renderItem={this.renderItem}
                      renderSectionHeader={this.renderSectionHeader}
                      sections={sections}
                      refreshing={this.state.refreshing}
-                     onRefresh={() => this.fetchAccounts()}
+                     onRefresh={() => this.refreshAccounts()}
+                     onEndReached={() => this.loadMore()}
+                     onEndReachedThreshold={0.5}
                      keyExtractor={_.property('id')} />
       </View>
     );
