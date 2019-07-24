@@ -1,6 +1,7 @@
 export const Types = [
   { label: '吃吃吃', value: '吃吃吃', color: '#02adf0' },
   { label: '买买买', value: '买买买', color: '#ff77e7' },
+  { label: '出行', value: '出行', color: '#14cfa5' },
 ];
 
 export const SubTypes = {
@@ -17,6 +18,13 @@ export const SubTypes = {
     { label: '无', value: '无' },
     { label: '淘宝', value: '淘宝' },
     { label: '京东', value: '京东' },
+    { label: '其他', value: '其他' },
+  ],
+  出行: [
+    { label: '无', value: '无' },
+    { label: '公交', value: '公交' },
+    { label: '长途', value: '长途' },
+    { label: '住宿', value: '住宿' },
     { label: '其他', value: '其他' },
   ],
 };
