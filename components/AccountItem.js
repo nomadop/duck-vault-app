@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { PanResponder, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, Text, View } from 'react-native';
+import { RectButton, Swipeable } from 'react-native-gesture-handler';
 import moment from 'moment';
 import * as _ from 'lodash';
 
@@ -7,44 +8,31 @@ import { Types } from '../constants/Types';
 import { currency } from '../helpers/Number';
 
 export class AccountItem extends Component {
-  constructor() {
-    super();
-    this.state = { dx: 0 };
-    this._panResponder = PanResponder.create({
-      // Ask to be the responder:
-      onStartShouldSetPanResponder: _.stubFalse,
-      onStartShouldSetPanResponderCapture: _.stubFalse,
-      onMoveShouldSetPanResponder: _.stubTrue,
-      onMoveShouldSetPanResponderCapture: _.stubTrue,
-
-      onPanResponderGrant: _.noop,
-      onPanResponderMove: (evt, { dx }) => {
-        if (-dx > 10) {
-          this.setState({ dx: _.min([_.max([0, -dx]), 200]) });
-        }
-      },
-      onPanResponderTerminationRequest: _.stubTrue,
-      onPanResponderRelease: (evt, { dx }) => {
-        this.setState({ dx: 0 });
-        if (-dx >= 200) {
-          this.props.onDelete();
-        }
-      },
-      onPanResponderTerminate: _.noop,
-      onShouldBlockNativeResponder: _.stubTrue,
+  renderDeleteButton = progress => {
+    const translateX = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [120, 0],
     });
-  }
+    const transform = { transform: [{ translateX }] };
+    return (
+      <Animated.View style={[transform, styles.swipeBackground]}>
+        <RectButton style={styles.accountDelete} onPress={this.props.onDelete}>
+          <Text style={styles.accountDeleteText}>删除</Text>
+        </RectButton>
+      </Animated.View>
+    );
+  };
 
   render() {
     const { item, index } = this.props;
-    const { dx } = this.state;
-    const offset = dx > 100 ? 100 + (dx - 100) * 0.3 : dx;
-    const accountStyle = { marginLeft: -offset };
-    const deleteStyle = { width: offset };
     const typeStyle = { backgroundColor: _.find(Types, { value: item.type }).color };
     return (
-      <View style={styles.container}>
-        <View style={[styles.account, accountStyle]}>
+      <Swipeable friction={2}
+                 rightThreshold={40}
+                 containerStyle={styles.swipeBackground}
+                 childrenContainerStyle={styles.container}
+                 renderRightActions={this.renderDeleteButton}>
+        <View style={styles.account}>
           <View style={[styles.accountType, typeStyle]}>
             <Text style={styles.accountTypeText}>{item.type}</Text>
           </View>
@@ -56,15 +44,12 @@ export class AccountItem extends Component {
               <Text style={styles.accountUsername}>{item.username}</Text>
               <Text style={styles.accountDatetime}>{moment(item.datetime).format('YYYY-MM-DD HH:mm')}</Text>
             </View>
-            <View style={styles.accountChange} {...this._panResponder.panHandlers}>
+            <View style={styles.accountChange}>
               <Text style={styles.accountChangeText}>-{currency(item.change)}</Text>
             </View>
           </View>
         </View>
-        <View style={[styles.accountDelete, deleteStyle]}>
-          <Text style={styles.accountDeleteText}>删除</Text>
-        </View>
-      </View>
+      </Swipeable>
     );
   }
 }
@@ -74,9 +59,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
   },
+  swipeBackground: {
+    backgroundColor: '#fe0042',
+  },
   account: {
     flexGrow: 1,
     flexDirection: 'row',
+    backgroundColor: '#fff',
   },
   accountType: {
     width: 38,
@@ -124,13 +113,13 @@ const styles = StyleSheet.create({
     color: '#9d9d9d',
   },
   accountDelete: {
+    flex: 1,
+    width: 120,
+    alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fe0042',
   },
   accountDeleteText: {
-    width: 60,
     color: '#fff',
     fontSize: 24,
-    marginLeft: 30,
-  }
+  },
 });
