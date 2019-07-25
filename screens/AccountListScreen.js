@@ -48,6 +48,7 @@ export default class AccountListScreen extends Component {
       endReached: false,
       refreshing: false,
       spinner: false,
+      swipedItem: null,
     };
   }
 
@@ -128,7 +129,14 @@ export default class AccountListScreen extends Component {
   }, 500);
 
   renderItem = ({ item, index }) => {
-    return <AccountItem item={item} index={index} onDelete={() => this.deleteAccount(item.id)} />
+    const swipeHandler = () => setTimeout(() => this.setState({ swipedItem: item.id }), 0);
+    return (
+      <AccountItem item={item}
+                   index={index}
+                   swipedItem={this.state.swipedItem}
+                   onDelete={() => this.deleteAccount(item.id)}
+                   onSwipe={swipeHandler}/>
+    );
   };
 
   renderSectionHeader = ({ section }) => {
@@ -139,6 +147,8 @@ export default class AccountListScreen extends Component {
       </View>
     );
   };
+
+  renderItemSeparator = () => <View style={styles.itemSeparator} />;
 
   renderAccountList = (sections = this.state.accounts) => {
     return (
@@ -156,7 +166,8 @@ export default class AccountListScreen extends Component {
                      onRefresh={() => this.refreshAccounts()}
                      onEndReached={() => this.loadMore()}
                      onEndReachedThreshold={0.5}
-                     keyExtractor={_.property('id')} />
+                     keyExtractor={_.property('id')}
+                     ItemSeparatorComponent={this.renderItemSeparator}/>
       </View>
     );
   };
@@ -216,4 +227,10 @@ const styles = StyleSheet.create({
   searchCancelText: {
     color: '#9b9b9b',
   },
+  itemSeparator: {
+    marginLeft: 64,
+    marginRight: 8,
+    borderTopWidth: 1,
+    borderColor: '#ccc',
+  }
 });
