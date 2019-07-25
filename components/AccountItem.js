@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { RectButton, Swipeable } from 'react-native-gesture-handler';
 import moment from 'moment';
@@ -7,51 +7,50 @@ import * as _ from 'lodash';
 import { Types } from '../constants/Types';
 import { currency } from '../helpers/Number';
 
-export class AccountItem extends Component {
-  renderDeleteButton = progress => {
-    const translateX = progress.interpolate({
-      inputRange: [0, 1],
-      outputRange: [120, 0],
-    });
-    const transform = { transform: [{ translateX }] };
-    return (
-      <Animated.View style={[transform, styles.swipeBackground]}>
-        <RectButton style={styles.accountDelete} onPress={this.props.onDelete}>
-          <Text style={styles.accountDeleteText}>删除</Text>
-        </RectButton>
-      </Animated.View>
-    );
-  };
+const renderDeleteButton = onDelete => progress => {
+  const translateX = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [120, 0],
+  });
+  const transform = { transform: [{ translateX }] };
+  return (
+    <Animated.View style={[transform, styles.swipeBackground]}>
+      <RectButton style={styles.accountDelete} onPress={onDelete}>
+        <Text style={styles.accountDeleteText}>删除</Text>
+      </RectButton>
+    </Animated.View>
+  );
+};
 
-  render() {
-    const { item, index } = this.props;
-    const typeStyle = { backgroundColor: _.find(Types, { value: item.type }).color };
-    return (
-      <Swipeable friction={2}
-                 rightThreshold={40}
-                 containerStyle={styles.swipeBackground}
-                 childrenContainerStyle={styles.container}
-                 renderRightActions={this.renderDeleteButton}>
-        <View style={styles.account}>
-          <View style={[styles.accountType, typeStyle]}>
-            <Text style={styles.accountTypeText}>{item.type}</Text>
+export function AccountItem(props) {
+  const { item, index, onDelete } = props;
+  const typeStyle = { backgroundColor: _.find(Types, { value: item.type }).color };
+  return (
+    <Swipeable friction={2}
+               rightThreshold={60}
+               overshootFriction={8}
+               containerStyle={styles.swipeBackground}
+               childrenContainerStyle={styles.container}
+               renderRightActions={renderDeleteButton(onDelete)}>
+      <View style={styles.account}>
+        <View style={[styles.accountType, typeStyle]}>
+          <Text style={styles.accountTypeText}>{item.type}</Text>
+        </View>
+        <View style={[styles.accountDetail, index === 0 && styles.firstAccountDetail]}>
+          <View style={styles.accountInfo}>
+            <Text>子类: {item.sub_type}</Text>
+            <Text>商家: {item.merchant}</Text>
+            <Text>备注: {item.comments}</Text>
+            <Text style={styles.accountUsername}>{item.username}</Text>
+            <Text style={styles.accountDatetime}>{moment(item.datetime).format('YYYY-MM-DD HH:mm')}</Text>
           </View>
-          <View style={[styles.accountDetail, index === 0 && styles.firstAccountDetail]}>
-            <View style={styles.accountInfo}>
-              <Text>子类: {item.sub_type}</Text>
-              <Text>商家: {item.merchant}</Text>
-              <Text>备注: {item.comments}</Text>
-              <Text style={styles.accountUsername}>{item.username}</Text>
-              <Text style={styles.accountDatetime}>{moment(item.datetime).format('YYYY-MM-DD HH:mm')}</Text>
-            </View>
-            <View style={styles.accountChange}>
-              <Text style={styles.accountChangeText}>-{currency(item.change)}</Text>
-            </View>
+          <View style={styles.accountChange}>
+            <Text style={styles.accountChangeText}>-{currency(item.change)}</Text>
           </View>
         </View>
-      </Swipeable>
-    );
-  }
+      </View>
+    </Swipeable>
+  );
 }
 
 
