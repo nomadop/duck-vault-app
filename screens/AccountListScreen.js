@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { View, Text, SectionList, StyleSheet, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import DropdownAlert from 'react-native-dropdownalert';
 import Spinner from 'react-native-loading-spinner-overlay';
 import Search from 'react-native-search-box';
@@ -150,13 +151,25 @@ export default class AccountListScreen extends Component {
 
   renderItemSeparator = () => <View style={styles.itemSeparator} />;
 
+  renderListHeader = () => {
+    return (
+      <View style={styles.listHeader}>
+        <View style={styles.searchContainer}>
+          <Search placeholder="搜索"
+                  backgroundColor="#fff"
+                  cancelButtonTextStyle={styles.searchCancelText}
+                  onSearch={keyword => this.refreshAccounts(keyword)}
+                  onCancel={() => this.refreshAccounts(null)}/>
+        </View>
+        <Ionicons name="ios-stats" color="#ccc" style={styles.listHeaderIcon} size={32} />
+      </View>
+    )
+  };
+
   renderAccountList = (sections = this.state.accounts) => {
     return (
       <View style={styles.container}>
-        <Search backgroundColor="#fff"
-                cancelButtonTextStyle={styles.searchCancelText}
-                onSearch={keyword => this.refreshAccounts(keyword)}
-                onCancel={() => this.refreshAccounts(null)}/>
+        {this.renderListHeader()}
         <SectionList ref={ref => this.sectionList = ref}
                      style={styles.container}
                      renderItem={this.renderItem}
@@ -224,13 +237,24 @@ const styles = StyleSheet.create({
   sectionHeaderText: {
     color: '#9b9b9b',
   },
+  searchContainer: {
+    flex: 1,
+  },
   searchCancelText: {
     color: '#9b9b9b',
+  },
+  listHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  listHeaderIcon: {
+    paddingTop: 4,
+    paddingHorizontal: 4,
   },
   itemSeparator: {
     marginLeft: 64,
     marginRight: 8,
     borderTopWidth: 1,
     borderColor: '#ccc',
-  }
+  },
 });
