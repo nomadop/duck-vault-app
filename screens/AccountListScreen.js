@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { View, Text, SectionList, StyleSheet, ActivityIndicator } from 'react-native';
+import { Animated, View, Text, SectionList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { VictoryBar, VictoryChart, VictoryTheme } from 'victory-native';
 import { Ionicons } from '@expo/vector-icons';
 import DropdownAlert from 'react-native-dropdownalert';
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -50,6 +51,7 @@ export default class AccountListScreen extends Component {
       refreshing: false,
       spinner: false,
       swipedItem: null,
+      chartContainerHeight: new Animated.Value(0),
     };
   }
 
@@ -129,6 +131,12 @@ export default class AccountListScreen extends Component {
     this.fetchAccounts(true);
   }, 500);
 
+  toggleChart = (chartOpened = !this.state.chartOpened) => {
+    this.setState({ chartOpened }, () => {
+      Animated.timing(this.state.chartContainerHeight, { toValue: chartOpened ? 300 : 0 }).start();
+    });
+  };
+
   renderItem = ({ item, index }) => {
     const swipeHandler = () => setTimeout(() => this.setState({ swipedItem: item.id }), 0);
     return (
@@ -152,6 +160,7 @@ export default class AccountListScreen extends Component {
   renderItemSeparator = () => <View style={styles.itemSeparator} />;
 
   renderListHeader = () => {
+    const iconColor = this.state.chartOpened ? Colors.tintColor : '#ccc';
     return (
       <View style={styles.listHeader}>
         <View style={styles.searchContainer}>
@@ -161,15 +170,30 @@ export default class AccountListScreen extends Component {
                   onSearch={keyword => this.refreshAccounts(keyword)}
                   onCancel={() => this.refreshAccounts(null)}/>
         </View>
-        <Ionicons name="ios-stats" color="#ccc" style={styles.listHeaderIcon} size={32} />
+        <TouchableOpacity onPress={() => this.toggleChart()}>
+          <Ionicons name="ios-stats" color={iconColor} style={styles.listHeaderIcon} size={32} />
+        </TouchableOpacity>
       </View>
     )
+  };
+
+  renderStatsChart = () => {
+    const data = _.take(this.state.accounts, 12).reverse();
+    const chartContainerStyle = { height: this.state.chartContainerHeight };
+    return (
+      <Animated.View style={chartContainerStyle}>
+        <VictoryChart height={300} theme={VictoryTheme.grayscale}>
+          <VictoryBar data={data} x={d => _.last(d.title.split('-'))} y="total" />
+        </VictoryChart>
+      </Animated.View>
+    );
   };
 
   renderAccountList = (sections = this.state.accounts) => {
     return (
       <View style={styles.container}>
         {this.renderListHeader()}
+        {this.renderStatsChart()}
         <SectionList ref={ref => this.sectionList = ref}
                      style={styles.container}
                      renderItem={this.renderItem}
@@ -179,6 +203,7 @@ export default class AccountListScreen extends Component {
                      onRefresh={() => this.refreshAccounts()}
                      onEndReached={() => this.loadMore()}
                      onEndReachedThreshold={0.5}
+                     onScrollBeginDrag={() => this.toggleChart(false)}
                      keyExtractor={_.property('id')}
                      ItemSeparatorComponent={this.renderItemSeparator}/>
       </View>

@@ -34,7 +34,8 @@
     "react-native-root-toast": "^3.1.2",
     "react-native-search-box": "^0.0.19",
     "react-native-web": "^0.11.4",
-    "react-navigation": "^3.11.0"
+    "react-navigation": "^3.11.0",
+    "victory-native": "^32.0.2"
   },
   "devDependencies": {
     "babel-preset-expo": "^5.1.0",
