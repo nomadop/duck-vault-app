@@ -6,6 +6,7 @@ import DropdownAlert from 'react-native-dropdownalert';
 import Spinner from 'react-native-loading-spinner-overlay';
 import Search from 'react-native-search-box';
 import Toast from "react-native-root-toast";
+import { flow, join, reverse, split, take, takeRight } from 'lodash/fp';
 import * as _ from 'lodash';
 
 import { AccountItem } from '../components/AccountItem';
@@ -13,6 +14,7 @@ import { requireLogin } from '../helpers/User';
 import { currency } from '../helpers/Number';
 import Environment from '../constants/Environment';
 import Colors from '../constants/Colors';
+import SwitchButton from '../components/SwitchButton';
 
 function showSuccessToast() {
   Toast.show('载入完成', {
@@ -51,13 +53,13 @@ export default class AccountListScreen extends Component {
       refreshing: false,
       spinner: false,
       swipedItem: null,
+      sectionType: 'month',
       chartContainerHeight: new Animated.Value(0),
     };
   }
 
   componentDidMount() {
     this.didFocusSubscription = this.props.navigation.addListener('didFocus', () => {
-      this.sectionList && this.sectionList.scrollToLocation({ sectionIndex: 0, itemIndex: 0, animated: false });
       this.refreshAccounts();
     });
   }
@@ -69,8 +71,9 @@ export default class AccountListScreen extends Component {
   fetchAccounts(loadMore) {
     requireLogin().then(token => {
       this.setState({ refreshing: true });
-      const { anchor, keyword } = this.state;
+      const { anchor, keyword, sectionType } = this.state;
       const url = new URL(`${Environment.host}/accounts/section`);
+      url.searchParams.append('type', encodeURIComponent(sectionType));
       if (keyword) {
         url.searchParams.append('keyword', encodeURIComponent(keyword));
       }
@@ -115,8 +118,9 @@ export default class AccountListScreen extends Component {
     });
   }
 
-  refreshAccounts(keyword = this.state.keyword) {
-    this.setState({ anchor: null, endReached: false, keyword }, () => this.fetchAccounts(false));
+  refreshAccounts(keyword = this.state.keyword, sectionType = this.state.sectionType) {
+    this.sectionList && this.sectionList.scrollToLocation({ sectionIndex: 0, itemIndex: 0, animated: false });
+    this.setState({ anchor: null, endReached: false, keyword, sectionType }, () => this.fetchAccounts(false));
   }
 
   loadMore = _.debounce(() => {
@@ -133,7 +137,7 @@ export default class AccountListScreen extends Component {
 
   toggleChart = (chartOpened = !this.state.chartOpened) => {
     this.setState({ chartOpened }, () => {
-      Animated.timing(this.state.chartContainerHeight, { toValue: chartOpened ? 200 : 0 }).start();
+      Animated.timing(this.state.chartContainerHeight, { toValue: chartOpened ? 300 : 0 }).start();
     });
   };
 
@@ -178,7 +182,7 @@ export default class AccountListScreen extends Component {
   };
 
   renderStatsChart = () => {
-    const data = _.take(this.state.accounts, 9).reverse();
+    const data = flow(take(9), reverse)(this.state.accounts);
     const chartContainerStyle = { height: this.state.chartContainerHeight };
     const chartBarStyle = {
       data: { fill: Colors.tintColor },
@@ -191,10 +195,14 @@ export default class AccountListScreen extends Component {
     };
     return (
       <Animated.View style={[styles.chartContainer, chartContainerStyle]}>
-        { this.state.chartOpened && <VictoryChart height={200} padding={30} theme={VictoryTheme.grayscale}>
+        <SwitchButton defaultValue="month"
+                      buttons={[{ title: '月', value: 'month' }, { title: '日', value: 'day' }]}
+                      width={80} height={30} style={{ alignSelf: 'flex-start', marginLeft: 30, }}
+                      onChange={sectionType => this.refreshAccounts(this.state.keyword, sectionType)} />
+        { this.state.chartOpened && <VictoryChart height={270} padding={30} theme={VictoryTheme.grayscale}>
           <VictoryBar data={data}
                       y="total"
-                      x="title"
+                      x={({ title }) => flow(split('-'), takeRight(2), join('-'))(title)}
                       style={chartBarStyle}
                       labels={({ total }) => currency(total)}
           />
@@ -284,8 +292,7 @@ const styles = StyleSheet.create({
     color: '#9b9b9b',
   },
   chartContainer: {
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    overflow: 'hidden',
   },
   listHeader: {
     flexDirection: 'row',
