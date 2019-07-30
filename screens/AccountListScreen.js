@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Animated, View, Text, SectionList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { VictoryBar, VictoryChart, VictoryTheme } from 'victory-native';
+import { VictoryAxis, VictoryBar, VictoryChart, VictoryTheme } from 'victory-native';
 import { Ionicons } from '@expo/vector-icons';
 import DropdownAlert from 'react-native-dropdownalert';
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -133,7 +133,7 @@ export default class AccountListScreen extends Component {
 
   toggleChart = (chartOpened = !this.state.chartOpened) => {
     this.setState({ chartOpened }, () => {
-      Animated.timing(this.state.chartContainerHeight, { toValue: chartOpened ? 300 : 0 }).start();
+      Animated.timing(this.state.chartContainerHeight, { toValue: chartOpened ? 200 : 0 }).start();
     });
   };
 
@@ -178,13 +178,28 @@ export default class AccountListScreen extends Component {
   };
 
   renderStatsChart = () => {
-    const data = _.take(this.state.accounts, 12).reverse();
+    const data = _.take(this.state.accounts, 9).reverse();
     const chartContainerStyle = { height: this.state.chartContainerHeight };
+    const chartBarStyle = {
+      data: { fill: Colors.tintColor },
+      labels: { fontSize: 10, fill: '#9b9b9b' }
+    };
+    const axisStyle = {
+      axis: { stroke: '#ccc' },
+      ticks: {stroke: "#ccc", size: 5},
+      tickLabels: { fill: '#9b9b9b', padding: 3 },
+    };
     return (
-      <Animated.View style={chartContainerStyle}>
-        <VictoryChart height={300} theme={VictoryTheme.grayscale}>
-          <VictoryBar data={data} x={d => _.last(d.title.split('-'))} y="total" />
-        </VictoryChart>
+      <Animated.View style={[styles.chartContainer, chartContainerStyle]}>
+        { this.state.chartOpened && <VictoryChart height={200} padding={30} theme={VictoryTheme.grayscale}>
+          <VictoryBar data={data}
+                      y="total"
+                      x="title"
+                      style={chartBarStyle}
+                      labels={({ total }) => currency(total)}
+          />
+          <VictoryAxis style={axisStyle} fixLabelOverlap />
+        </VictoryChart> }
       </Animated.View>
     );
   };
@@ -267,6 +282,10 @@ const styles = StyleSheet.create({
   },
   searchCancelText: {
     color: '#9b9b9b',
+  },
+  chartContainer: {
+    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   listHeader: {
     flexDirection: 'row',
