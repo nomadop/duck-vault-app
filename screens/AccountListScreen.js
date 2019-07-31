@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
-import { Animated, View, Text, SectionList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { VictoryAxis, VictoryBar, VictoryChart, VictoryTheme } from 'victory-native';
+import { View, Text, SectionList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DropdownAlert from 'react-native-dropdownalert';
 import Spinner from 'react-native-loading-spinner-overlay';
 import Search from 'react-native-search-box';
 import Toast from "react-native-root-toast";
-import { flow, join, reverse, split, take, takeRight } from 'lodash/fp';
 import * as _ from 'lodash';
 
 import { AccountItem } from '../components/AccountItem';
@@ -14,7 +12,7 @@ import { requireLogin } from '../helpers/User';
 import { currency } from '../helpers/Number';
 import Environment from '../constants/Environment';
 import Colors from '../constants/Colors';
-import SwitchButton from '../components/SwitchButton';
+import { AccountChart } from '../components/AccountChart';
 
 function showSuccessToast() {
   Toast.show('载入完成', {
@@ -54,7 +52,6 @@ export default class AccountListScreen extends Component {
       spinner: false,
       swipedItem: null,
       sectionType: 'month',
-      chartContainerHeight: new Animated.Value(0),
     };
   }
 
@@ -136,9 +133,7 @@ export default class AccountListScreen extends Component {
   }, 500);
 
   toggleChart = (chartOpened = !this.state.chartOpened) => {
-    this.setState({ chartOpened }, () => {
-      Animated.timing(this.state.chartContainerHeight, { toValue: chartOpened ? 300 : 0 }).start();
-    });
+    this.setState({ chartOpened });
   };
 
   renderItem = ({ item, index }) => {
@@ -181,42 +176,13 @@ export default class AccountListScreen extends Component {
     )
   };
 
-  renderStatsChart = () => {
-    const data = flow(take(9), reverse)(this.state.accounts);
-    const chartContainerStyle = { height: this.state.chartContainerHeight };
-    const chartBarStyle = {
-      data: { fill: Colors.tintColor },
-      labels: { fontSize: 10, fill: '#9b9b9b' }
-    };
-    const axisStyle = {
-      axis: { stroke: '#ccc' },
-      ticks: {stroke: "#ccc", size: 5},
-      tickLabels: { fill: '#9b9b9b', padding: 3 },
-    };
-    return (
-      <Animated.View style={[styles.chartContainer, chartContainerStyle]}>
-        <SwitchButton defaultValue="month"
-                      buttons={[{ title: '月', value: 'month' }, { title: '日', value: 'day' }]}
-                      width={80} height={30} style={{ alignSelf: 'flex-start', marginLeft: 30, }}
-                      onChange={sectionType => this.refreshAccounts(this.state.keyword, sectionType)} />
-        { this.state.chartOpened && <VictoryChart height={270} padding={30} theme={VictoryTheme.grayscale}>
-          <VictoryBar data={data}
-                      y="total"
-                      x={({ title }) => flow(split('-'), takeRight(2), join('-'))(title)}
-                      style={chartBarStyle}
-                      labels={({ total }) => currency(total)}
-          />
-          <VictoryAxis style={axisStyle} fixLabelOverlap />
-        </VictoryChart> }
-      </Animated.View>
-    );
-  };
-
   renderAccountList = (sections = this.state.accounts) => {
     return (
       <View style={styles.container}>
         {this.renderListHeader()}
-        {this.renderStatsChart()}
+        <AccountChart accounts={sections}
+                      opened={this.state.chartOpened}
+                      onChangeType={sectionType => this.refreshAccounts(this.state.keyword, sectionType)} />
         <SectionList ref={ref => this.sectionList = ref}
                      style={styles.container}
                      renderItem={this.renderItem}
@@ -290,9 +256,6 @@ const styles = StyleSheet.create({
   },
   searchCancelText: {
     color: '#9b9b9b',
-  },
-  chartContainer: {
-    overflow: 'hidden',
   },
   listHeader: {
     flexDirection: 'row',

@@ -1,16 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as _ from 'lodash';
 
 import Colors from '../constants/Colors';
 
-function Button({ button, radius, first, last, active, setValue }) {
+function Button({ button: { title, value }, radius, first, last, active, setValue, onChange }) {
   const activeStyle = { backgroundColor: active ? Colors.tintColor : '#ccc' };
   const firstStyle = first && { borderTopLeftRadius: radius, borderBottomLeftRadius: radius, paddingLeft: radius / 2 };
   const lastStyle = last && { borderTopRightRadius: radius, borderBottomRightRadius: radius, paddingRight: radius / 2 };
+  const handlePress = () => {
+    setValue(value);
+    onChange(value);
+  };
   return (
-    <TouchableOpacity style={[styles.button, activeStyle, firstStyle, lastStyle]} onPress={() => setValue(button.value)}>
-      <Text style={styles.buttonText}>{button.title}</Text>
+    <TouchableOpacity style={[styles.button, activeStyle, firstStyle, lastStyle]} onPress={handlePress}>
+      <Text style={styles.buttonText}>{title}</Text>
     </TouchableOpacity>
   )
 }
@@ -18,7 +22,6 @@ function Button({ button, radius, first, last, active, setValue }) {
 export default function SwitchButton({ width, height, defaultValue, buttons, style, onChange }) {
   const containerSize = { width, height };
   const [value, setValue] = useState(defaultValue);
-  useEffect(() => onChange(value), [value]);
   return (
     <View style={[styles.container, containerSize, style]}>
       {buttons.map((button, index) => (
@@ -28,7 +31,8 @@ export default function SwitchButton({ width, height, defaultValue, buttons, sty
                 radius={height / 2}
                 first={index === 0}
                 last={index === buttons.length - 1}
-                setValue={setValue} />
+                setValue={setValue}
+                onChange={onChange} />
       ))}
     </View>
   );
